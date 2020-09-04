@@ -45,7 +45,11 @@ func setup() error {
 func tearDown() {
 	_, err := db.Exec("DELETE FROM images")
 	if err != nil {
-		fmt.Println("warning: unable to clear table")
+		fmt.Println("warning: unable to clear table images")
+	}
+	_, err = db.Exec("DELETE FROM users")
+	if err != nil {
+		fmt.Println("warning: unable to clear table users")
 	}
 	err = os.Setenv("DB_NAME", backupDatabase)
 	if err != nil {
@@ -249,5 +253,39 @@ func TestGetImage(t *testing.T) {
 	}
 	if !reflect.DeepEqual(image2, image1) {
 		t.Errorf("the two images should be identicals")
+	}
+}
+
+func TestCreateUser(t *testing.T) {
+	user, err := api.NewUser("dummyUser", "dummyPassword")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	if user == nil {
+		t.Errorf("user shouldn't be nil")
+	}
+
+	err = CreateUser(db, *user)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestDestroyUser(t *testing.T) {
+	user, err := api.NewUser("dummyUserToDelete", "dummyPassword")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	if user == nil {
+		t.Errorf("user shouldn't be nil")
+	}
+
+	err = CreateUser(db, *user)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	err = DeleteUser(db, user.Username)
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 }
