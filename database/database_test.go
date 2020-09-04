@@ -4,6 +4,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/wtrep/image-repo-backend/api"
+	"reflect"
 	"testing"
 )
 
@@ -206,5 +207,37 @@ func TestUpdateImage(t *testing.T) {
 	err = UpdateImage(db, image2)
 	if err != nil {
 		t.Errorf(err.Error())
+	}
+}
+
+func TestGetImage(t *testing.T) {
+	db, err := NewConnectionPool()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	image1 := &api.Image{
+		UUID:       uuid.New(),
+		Name:       "testGetImage",
+		Owner:      "William",
+		Kind:       "jpeg",
+		Height:     640,
+		Length:     320,
+		Bucket:     "testBucket",
+		BucketPath: "william/testImage",
+		Status:     "CREATED",
+	}
+
+	err = CreateImage(db, *image1)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	image2, err := GetImage(db, image1.UUID)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	if !reflect.DeepEqual(image2, image1) {
+		t.Errorf("123")
 	}
 }

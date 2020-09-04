@@ -106,8 +106,8 @@ func generateCreateImageStatement(db *sql.DB) (*sql.Stmt, error) {
 		"(?, ?, ?, ?, ?, ?, ?, ?, ?);")
 }
 
-func DeleteImage(db *sql.DB, uuid uuid.UUID) error {
-	uuidToDelete, err := uuid.MarshalBinary()
+func DeleteImage(db *sql.DB, id uuid.UUID) error {
+	uuidToDelete, err := id.MarshalBinary()
 	if err != nil {
 		return err
 	}
@@ -116,6 +116,29 @@ func DeleteImage(db *sql.DB, uuid uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func GetImage(db *sql.DB, id uuid.UUID) (*api.Image, error) {
+	uuidToGet, err := id.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	row := db.QueryRow("SELECT * FROM images WHERE UUID = ?;", uuidToGet)
+	image := &api.Image{}
+	var uuidToParse []byte
+
+	err = row.Scan(&uuidToParse, &image.Name, &image.Owner, &image.Kind, &image.Height, &image.Length, &image.Bucket,
+		&image.BucketPath, &image.Status)
+	if err != nil {
+		return nil, err
+	}
+
+	err = image.UUID.UnmarshalBinary(uuidToParse)
+	if err != nil {
+		return nil, err
+	}
+	return image, nil
 }
 
 func UpdateImage(db *sql.DB, image api.Image) error {
