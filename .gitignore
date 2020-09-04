@@ -14,5 +14,10 @@
 # GoLand project files
 .idea
 
+# Deployment specifics
+deployment/service-account.json
+deployment/terraform*
+deployment/.terraform
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
