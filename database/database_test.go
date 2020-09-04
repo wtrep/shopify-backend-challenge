@@ -43,10 +43,12 @@ func setup() error {
 }
 
 func tearDown() {
+	//goland:noinspection SqlWithoutWhere
 	_, err := db.Exec("DELETE FROM images")
 	if err != nil {
 		fmt.Println("warning: unable to clear table images")
 	}
+	//goland:noinspection SqlWithoutWhere
 	_, err = db.Exec("DELETE FROM users")
 	if err != nil {
 		fmt.Println("warning: unable to clear table users")
@@ -265,6 +267,7 @@ func TestCreateUser(t *testing.T) {
 		t.Errorf("user shouldn't be nil")
 	}
 
+	//goland:noinspection GoNilness
 	err = CreateUser(db, *user)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -280,6 +283,7 @@ func TestDestroyUser(t *testing.T) {
 		t.Errorf("user shouldn't be nil")
 	}
 
+	//goland:noinspection GoNilness
 	err = CreateUser(db, *user)
 	if err != nil {
 		t.Errorf(err.Error())
