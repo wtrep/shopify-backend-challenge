@@ -1,19 +1,59 @@
 package database
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/wtrep/image-repo-backend/api"
+	"os"
 	"reflect"
 	"testing"
 )
 
-func TestCreateImage(t *testing.T) {
-	db, err := NewConnectionPool()
+var (
+	backupDatabase string
+	db             *sql.DB
+)
+
+func TestMain(m *testing.M) {
+	err := setup()
 	if err != nil {
-		t.Errorf(err.Error())
+		os.Exit(1)
+	}
+	returnCode := m.Run()
+	tearDown()
+	os.Exit(returnCode)
+}
+
+func setup() error {
+	dbName, ok := os.LookupEnv("DB_NAME")
+	if !ok {
+		return errors.New("error: DB_NAME environment variable not set")
+	}
+	backupDatabase = dbName
+	err := os.Setenv("DB_NAME", "images-repo-test")
+	if err != nil {
+		return err
 	}
 
+	db, err = NewConnectionPool()
+	return err
+}
+
+func tearDown() {
+	_, err := db.Exec("DELETE FROM images")
+	if err != nil {
+		fmt.Println("warning: unable to clear table")
+	}
+	err = os.Setenv("DB_NAME", backupDatabase)
+	if err != nil {
+		fmt.Println("warning: unable to restore DB_NAME environment variable")
+	}
+}
+
+func TestCreateImage(t *testing.T) {
 	image := api.Image{
 		UUID:       uuid.New(),
 		Name:       "testImage",
@@ -26,18 +66,13 @@ func TestCreateImage(t *testing.T) {
 		Status:     "CREATED",
 	}
 
-	err = CreateImage(db, image)
+	err := CreateImage(db, image)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 }
 
 func TestDuplicateCreateImage(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	image := api.Image{
 		UUID:       uuid.New(),
 		Name:       "testImage",
@@ -50,7 +85,7 @@ func TestDuplicateCreateImage(t *testing.T) {
 		Status:     "CREATED",
 	}
 
-	err = CreateImage(db, image)
+	err := CreateImage(db, image)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -63,11 +98,6 @@ func TestDuplicateCreateImage(t *testing.T) {
 }
 
 func TestCreateImages(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	images := []api.Image{
 		{
 			UUID:       uuid.New(),
@@ -102,12 +132,7 @@ func TestCreateImages(t *testing.T) {
 }
 
 func TestDuplicateCreateImages(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
 	dummyUUID := uuid.New()
-
 	images := []api.Image{
 		{
 			UUID:       dummyUUID,
@@ -142,11 +167,6 @@ func TestDuplicateCreateImages(t *testing.T) {
 }
 
 func TestDeleteImage(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	image := api.Image{
 		UUID:       uuid.New(),
 		Name:       "testDeleteImage",
@@ -159,7 +179,7 @@ func TestDeleteImage(t *testing.T) {
 		Status:     "CREATED",
 	}
 
-	err = CreateImage(db, image)
+	err := CreateImage(db, image)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -171,11 +191,6 @@ func TestDeleteImage(t *testing.T) {
 }
 
 func TestUpdateImage(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	image1 := api.Image{
 		UUID:       uuid.New(),
 		Name:       "testUpdateImageFirst",
@@ -199,7 +214,7 @@ func TestUpdateImage(t *testing.T) {
 		Status:     "UPLOADED",
 	}
 
-	err = CreateImage(db, image1)
+	err := CreateImage(db, image1)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -211,11 +226,6 @@ func TestUpdateImage(t *testing.T) {
 }
 
 func TestGetImage(t *testing.T) {
-	db, err := NewConnectionPool()
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	image1 := &api.Image{
 		UUID:       uuid.New(),
 		Name:       "testGetImage",
@@ -228,7 +238,7 @@ func TestGetImage(t *testing.T) {
 		Status:     "CREATED",
 	}
 
-	err = CreateImage(db, *image1)
+	err := CreateImage(db, *image1)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -238,6 +248,6 @@ func TestGetImage(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	if !reflect.DeepEqual(image2, image1) {
-		t.Errorf("123")
+		t.Errorf("the two images should be identicals")
 	}
 }

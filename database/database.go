@@ -24,8 +24,12 @@ func NewConnectionPool() (*sql.DB, error) {
 	if !ok {
 		return nil, errors.New("error: DB_PASSWORD environment variable not set")
 	}
+	dbName, ok := os.LookupEnv("DB_NAME")
+	if !ok {
+		return nil, errors.New("error: DB_NAME environment variable not set")
+	}
 
-	db, err := sql.Open("mysql", "backend-sa:"+dbPassword+"@("+dbIP+")/images-repo")
+	db, err := sql.Open("mysql", "backend-sa:"+dbPassword+"@("+dbIP+")/"+dbName)
 	if err != nil {
 		return nil, err
 	}

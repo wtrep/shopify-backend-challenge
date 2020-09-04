@@ -20,8 +20,13 @@ resource "google_sql_database_instance" "master" {
   }
 }
 
-resource "google_sql_database" "users" {
+resource "google_sql_database" "db" {
   name     = "images-repo"
+  instance = google_sql_database_instance.master.name
+}
+
+resource "google_sql_database" "test-db" {
+  name     = "images-repo-test"
   instance = google_sql_database_instance.master.name
 }
 
