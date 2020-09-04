@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/wtrep/image-repo-backend/api"
 	"os"
 	"sync"
@@ -32,7 +33,7 @@ func NewConnectionPool() (*sql.DB, error) {
 }
 
 func CreateImage(db *sql.DB, image api.Image) error {
-	uuid, err := image.UUID.MarshalBinary()
+	uuidToCreate, err := image.UUID.MarshalBinary()
 	if err != nil {
 		return err
 	}
@@ -42,7 +43,7 @@ func CreateImage(db *sql.DB, image api.Image) error {
 		return err
 	}
 
-	_, err = stmt.Exec(uuid, image.Name, image.Owner, image.Kind, image.Height, image.Length,
+	_, err = stmt.Exec(uuidToCreate, image.Name, image.Owner, image.Kind, image.Height, image.Length,
 		image.Bucket, image.BucketPath, image.Status)
 	if err != nil {
 		return err
@@ -77,7 +78,7 @@ func CreateImages(db *sql.DB, images []api.Image) ([]CreateImageError, error) {
 }
 
 func createImageFromStmt(stmt *sql.Stmt, image api.Image, failedChan chan<- CreateImageError, wg *sync.WaitGroup) {
-	uuid, err := image.UUID.MarshalBinary()
+	uuidToCreate, err := image.UUID.MarshalBinary()
 	if err != nil {
 		failedChan <- CreateImageError{
 			image: image,
@@ -87,7 +88,7 @@ func createImageFromStmt(stmt *sql.Stmt, image api.Image, failedChan chan<- Crea
 		return
 	}
 
-	_, err = stmt.Exec(uuid, image.Name, image.Owner, image.Kind, image.Height, image.Length,
+	_, err = stmt.Exec(uuidToCreate, image.Name, image.Owner, image.Kind, image.Height, image.Length,
 		image.Bucket, image.BucketPath, image.Status)
 	if err != nil {
 		failedChan <- CreateImageError{
@@ -103,4 +104,32 @@ func generateCreateImageStatement(db *sql.DB) (*sql.Stmt, error) {
 		"(UUID, name, owner, kind, height, length, bucket, bucketPath, status) " +
 		"VALUES " +
 		"(?, ?, ?, ?, ?, ?, ?, ?, ?);")
+}
+
+func DeleteImage(db *sql.DB, uuid uuid.UUID) error {
+	uuidToDelete, err := uuid.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DELETE FROM `images` WHERE `uuid` = ?;", uuidToDelete)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateImage(db *sql.DB, image api.Image) error {
+	uuidToUpdate, err := image.UUID.MarshalBinary()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("Update images SET name = ?, owner = ?, kind = ?, height = ?, length = ?, bucket = ?, "+
+		"bucketPath = ?, status = ? WHERE uuid = ?", image.Name, image.Owner, image.Kind, image.Height, image.Length,
+		image.Bucket, image.BucketPath, image.Status, uuidToUpdate)
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

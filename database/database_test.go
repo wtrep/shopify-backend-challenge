@@ -139,3 +139,72 @@ func TestDuplicateCreateImages(t *testing.T) {
 		t.Errorf("createImages should return one createImageError")
 	}
 }
+
+func TestDeleteImage(t *testing.T) {
+	db, err := NewConnectionPool()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	image := api.Image{
+		UUID:       uuid.New(),
+		Name:       "testDeleteImage",
+		Owner:      "William",
+		Kind:       "jpeg",
+		Height:     640,
+		Length:     320,
+		Bucket:     "testBucket",
+		BucketPath: "william/testImage",
+		Status:     "CREATED",
+	}
+
+	err = CreateImage(db, image)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = DeleteImage(db, image.UUID)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestUpdateImage(t *testing.T) {
+	db, err := NewConnectionPool()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	image1 := api.Image{
+		UUID:       uuid.New(),
+		Name:       "testUpdateImageFirst",
+		Owner:      "William",
+		Kind:       "jpeg",
+		Height:     640,
+		Length:     320,
+		Bucket:     "testBucket",
+		BucketPath: "william/testImage",
+		Status:     "CREATED",
+	}
+	image2 := api.Image{
+		UUID:       image1.UUID,
+		Name:       "testUpdateImageSecond",
+		Owner:      "Bill",
+		Kind:       "png",
+		Height:     6400,
+		Length:     3200,
+		Bucket:     "testBucketUpdated",
+		BucketPath: "william/testImage123",
+		Status:     "UPLOADED",
+	}
+
+	err = CreateImage(db, image1)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = UpdateImage(db, image2)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
