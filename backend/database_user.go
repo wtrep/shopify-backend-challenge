@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 )
 
 var UserAlreadyExist = errors.New("user already exist")
@@ -70,4 +71,23 @@ func UpdateSessionExpiration(db *sql.DB, session UserActiveSession) error {
 		return err
 	}
 	return nil
+}
+
+func GetActiveSession(db *sql.DB, sessionUUID string) (*UserActiveSession, error) {
+	uuidToFind, err := uuid.Parse(sessionUUID)
+	if err != nil {
+		return nil, err
+	}
+	binaryUUID, err := uuidToFind.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+
+	var session UserActiveSession
+	row := db.QueryRow("SELECT * FROM sessions WHERE UUID=?", binaryUUID)
+	err = row.Scan(&session.UUID, &session.Username, &session.CreatedAt, &session.Expiration)
+	if err != nil {
+		return nil, err
+	}
+	return &session, nil
 }

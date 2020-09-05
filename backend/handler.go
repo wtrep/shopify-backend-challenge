@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -27,6 +28,7 @@ func SetupAndServeRoutes() {
 	r := mux.NewRouter()
 	r.HandleFunc("/auth", handler.HandleGetAuthToken).Methods("GET")
 	r.HandleFunc("/user", handler.HandlePostUser).Methods("POST")
+	r.HandleFunc("/image", handler.HandlePostImage).Methods("POST")
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {
 		panic(err)
@@ -64,7 +66,6 @@ func (h *Handler) HandleGetAuthToken(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(session)
 		if err != nil {
 			http.Error(w, "Internal Error", http.StatusInternalServerError)
-			return
 		}
 	} else {
 		http.Error(w, "Wrong password", http.StatusUnauthorized)
@@ -98,4 +99,41 @@ func (h *Handler) HandlePostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte("OK"))
+}
+
+func (h *Handler) HandlePostImage(w http.ResponseWriter, r *http.Request) {
+	var request ImageRequest
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	token := r.Header.Get("Authorization")
+	if len(token) == 0 {
+		http.Error(w, "Missing Bearer token", http.StatusBadRequest)
+		return
+	}
+	tokenSlice := strings.Split(token, " ")
+	if len(tokenSlice) != 2 {
+		http.Error(w, "Invalid Bearer token format", http.StatusBadRequest)
+		return
+	}
+	session, err := GetActiveSession(h.db, tokenSlice[1])
+	if err != nil {
+		http.Error(w, "No session associated with that token", http.StatusUnauthorized)
+		return
+	}
+
+	image := request.toImage(session.Username)
+	err = CreateImage(h.db, image)
+	if err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(image.toImageResponse())
+	if err != nil {
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+	}
 }

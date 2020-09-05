@@ -2,6 +2,7 @@ package backend
 
 import (
 	"github.com/google/uuid"
+	"os"
 )
 
 type Image struct {
@@ -14,6 +15,13 @@ type Image struct {
 	Bucket     string
 	BucketPath string
 	Status     string
+}
+
+type ImageRequest struct {
+	Name   string `json:"name"`
+	Kind   string `json:"kind"`
+	Height int    `json:"height"`
+	Length int    `json:"length"`
 }
 
 type ImageResponse struct {
@@ -33,5 +41,21 @@ func (i *Image) toImageResponse() ImageResponse {
 		Kind:   i.Kind,
 		Height: i.Height,
 		Length: i.Length,
+	}
+}
+
+func (i *ImageRequest) toImage(owner string) Image {
+	imageUUID := uuid.New()
+
+	return Image{
+		UUID:       imageUUID,
+		Name:       i.Name,
+		Owner:      owner,
+		Kind:       i.Kind,
+		Height:     i.Height,
+		Length:     i.Length,
+		Bucket:     os.Getenv("BUCKET"),
+		BucketPath: imageUUID.String() + "." + i.Kind,
+		Status:     "CREATED",
 	}
 }
