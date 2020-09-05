@@ -2,9 +2,7 @@ package backend
 
 import (
 	"database/sql"
-	"errors"
 	"github.com/google/uuid"
-	"sync"
 )
 
 type CreateImageError struct {
@@ -18,72 +16,41 @@ func CreateImage(db *sql.DB, image Image) error {
 		return err
 	}
 
-	stmt, err := generateCreateImageStatement(db)
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt.Exec(uuidToCreate, image.Name, image.Owner, image.Kind, image.Height, image.Length,
-		image.Bucket, image.BucketPath, image.Status)
+	_, err = db.Exec("INSERT INTO images (UUID, name, owner, kind, height, length, bucket, bucketPath, "+
+		"status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", uuidToCreate, image.Name, image.Owner, image.Kind, image.Height,
+		image.Length, image.Bucket, image.BucketPath, image.Status)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func CreateImages(db *sql.DB, images []Image) ([]CreateImageError, error) {
-	stmt, err := generateCreateImageStatement(db)
+func CreateImages(db *sql.DB, images []Image) error {
+	tx, err := db.Begin()
 	if err != nil {
-		return nil, err
-	}
-	failedChan := make(chan CreateImageError, len(images))
-	var wg sync.WaitGroup
-	wg.Add(len(images))
-
-	for _, image := range images {
-		go createImageFromStmt(stmt, image, failedChan, &wg)
-	}
-	wg.Wait()
-	close(failedChan)
-
-	var createImageErrors []CreateImageError
-	for e := range failedChan {
-		createImageErrors = append(createImageErrors, e)
+		return err
 	}
 
-	if len(createImageErrors) != 0 {
-		return createImageErrors, errors.New("unable to create all images")
-	}
-	return nil, nil
-}
-
-func createImageFromStmt(stmt *sql.Stmt, image Image, failedChan chan<- CreateImageError, wg *sync.WaitGroup) {
-	uuidToCreate, err := image.UUID.MarshalBinary()
-	if err != nil {
-		failedChan <- CreateImageError{
-			image: image,
-			err:   err,
+	for _, i := range images {
+		uuidToCreate, err := i.UUID.MarshalBinary()
+		if err != nil {
+			tx.Rollback()
+			return err
 		}
-		wg.Done()
-		return
-	}
-
-	_, err = stmt.Exec(uuidToCreate, image.Name, image.Owner, image.Kind, image.Height, image.Length,
-		image.Bucket, image.BucketPath, image.Status)
-	if err != nil {
-		failedChan <- CreateImageError{
-			image: image,
-			err:   err,
+		_, err = tx.Exec("INSERT INTO images (UUID, name, owner, kind, height, length, bucket, bucketPath, "+
+			"status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", uuidToCreate, i.Name, i.Owner, i.Kind, i.Height, i.Length,
+			i.Bucket, i.BucketPath, i.Status)
+		if err != nil {
+			tx.Rollback()
+			return err
 		}
 	}
-	wg.Done()
-}
 
-func generateCreateImageStatement(db *sql.DB) (*sql.Stmt, error) {
-	return db.Prepare("INSERT INTO images " +
-		"(UUID, name, owner, kind, height, length, bucket, bucketPath, status) " +
-		"VALUES " +
-		"(?, ?, ?, ?, ?, ?, ?, ?, ?);")
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func DeleteImage(db *sql.DB, id uuid.UUID) error {

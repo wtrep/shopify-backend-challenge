@@ -134,12 +134,9 @@ func TestCreateImages(t *testing.T) {
 			Status:     "CREATED",
 		},
 	}
-	createImageErrors, err := CreateImages(db, images)
+	err := CreateImages(db, images)
 	if err != nil {
 		t.Errorf(err.Error())
-	}
-	if len(createImageErrors) != 0 {
-		t.Errorf("createImages return at least one createImageError")
 	}
 }
 
@@ -169,12 +166,9 @@ func TestDuplicateCreateImages(t *testing.T) {
 			Status:     "CREATED",
 		},
 	}
-	createImageErrors, err := CreateImages(db, images)
+	err := CreateImages(db, images)
 	if err == nil {
 		t.Errorf("duplicateCreateImages should return an error")
-	}
-	if len(createImageErrors) != 1 {
-		t.Errorf("createImages should return one createImageError")
 	}
 }
 

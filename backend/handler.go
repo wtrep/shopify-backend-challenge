@@ -29,6 +29,7 @@ func SetupAndServeRoutes() {
 	r.HandleFunc("/auth", handler.HandleGetAuthToken).Methods("GET")
 	r.HandleFunc("/user", handler.HandlePostUser).Methods("POST")
 	r.HandleFunc("/image", handler.HandlePostImage).Methods("POST")
+	r.HandleFunc("/images", handler.HandlePostImages).Methods("POST")
 	r.HandleFunc("/upload/{uuid}", handler.HandlePostUpload).Methods("POST")
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {
@@ -128,6 +129,34 @@ func (h *Handler) HandlePostImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = json.NewEncoder(w).Encode(image.toImageResponse())
+	if err != nil {
+		respondWithError(w, &JSONEncoderError)
+	}
+}
+
+func (h *Handler) HandlePostImages(w http.ResponseWriter, r *http.Request) {
+	var request CreateImagesRequest
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		respondWithError(w, &InvalidRequestBodyError)
+		return
+	}
+
+	session, detailedError := h.verifySessionToken(r)
+	if detailedError != nil {
+		respondWithError(w, detailedError)
+		return
+	}
+
+	images := request.toImages(session.Username)
+	err = CreateImages(h.db, images)
+	if err != nil {
+		respondWithError(w, &DatabaseInsertionError)
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(generateImagesResponse(images))
 	if err != nil {
 		respondWithError(w, &JSONEncoderError)
 	}
