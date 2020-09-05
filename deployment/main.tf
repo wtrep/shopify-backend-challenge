@@ -40,7 +40,7 @@ resource "google_sql_database" "test-db" {
 }
 
 ###################################################
-##   Create the backend MySQL service account    ##
+##   Create the repo-backend MySQL service account    ##
 ###################################################
 resource "google_sql_user" "db-user" {
   name     = "backend-sa"

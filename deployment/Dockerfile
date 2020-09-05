@@ -1,6 +1,7 @@
 FROM golang:1.15.1
 
 ENV GOPRIVATE=github.com/wtrep/image-repo-backend
+ENV GO111MODULE=on
 ARG GITHUB_TOKEN
 
 WORKDIR /go/src/app
