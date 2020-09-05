@@ -18,7 +18,7 @@ type UserActiveSession struct {
 	Expiration time.Time `json:"expiration"`
 }
 
-type UserSessionRequest struct {
+type UserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }

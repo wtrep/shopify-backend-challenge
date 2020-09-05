@@ -1,11 +1,20 @@
 package backend
 
-import "database/sql"
+import (
+	"database/sql"
+	"errors"
+	"github.com/go-sql-driver/mysql"
+)
+
+var UserAlreadyExist = errors.New("user already exist")
 
 func CreateUser(db *sql.DB, user User) error {
 	_, err := db.Exec("INSERT INTO users (username, pwHash) VALUEs (?, ?)", user.Username, user.PwHash)
-	if err != nil {
-		return err
+	if err, ok := err.(*mysql.MySQLError); ok {
+		if err.Number == 1062 {
+			return UserAlreadyExist
+		}
+		return errors.New(err.Error())
 	}
 	return nil
 }
