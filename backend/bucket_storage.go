@@ -1,4 +1,4 @@
-package repo_backend
+package backend
 
 import (
 	"cloud.google.com/go/storage"

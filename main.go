@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/wtrep/image-repo-backend/repo-backend"
+	"github.com/wtrep/image-repo-backend/backend"
 )
 
 func main() {
 	// TODO check environment variables
-	repo_backend.SetupAndServeRoutes()
+	backend.SetupAndServeRoutes()
 }

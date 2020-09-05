@@ -1,4 +1,4 @@
-package repo_backend
+package backend
 
 import (
 	"database/sql"
@@ -21,7 +21,7 @@ func NewConnectionPool() (*sql.DB, error) {
 		return nil, errors.New("error: DB_NAME environment variable not set")
 	}
 
-	db, err := sql.Open("mysql", "repo-backend-sa:"+dbPassword+"@("+dbIP+")/"+dbName+
+	db, err := sql.Open("mysql", "backend-sa:"+dbPassword+"@("+dbIP+")/"+dbName+
 		"?parseTime=true")
 	if err != nil {
 		return nil, err
