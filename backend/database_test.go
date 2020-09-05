@@ -1,4 +1,4 @@
-package database
+package backend
 
 import (
 	"database/sql"
@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
-	"github.com/wtrep/image-repo-backend/api"
 	"os"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var (
@@ -20,6 +20,7 @@ var (
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
+		fmt.Println(err.Error())
 		os.Exit(1)
 	}
 	returnCode := m.Run()
@@ -53,6 +54,11 @@ func tearDown() {
 	if err != nil {
 		fmt.Println("warning: unable to clear table users")
 	}
+	//goland:noinspection SqlWithoutWhere
+	_, err = db.Exec("DELETE FROM sessions")
+	if err != nil {
+		fmt.Println("warning: unable to clear table sessions")
+	}
 	err = os.Setenv("DB_NAME", backupDatabase)
 	if err != nil {
 		fmt.Println("warning: unable to restore DB_NAME environment variable")
@@ -60,7 +66,7 @@ func tearDown() {
 }
 
 func TestCreateImage(t *testing.T) {
-	image := api.Image{
+	image := Image{
 		UUID:       uuid.New(),
 		Name:       "testImage",
 		Owner:      "William",
@@ -79,7 +85,7 @@ func TestCreateImage(t *testing.T) {
 }
 
 func TestDuplicateCreateImage(t *testing.T) {
-	image := api.Image{
+	image := Image{
 		UUID:       uuid.New(),
 		Name:       "testImage",
 		Owner:      "William",
@@ -104,7 +110,7 @@ func TestDuplicateCreateImage(t *testing.T) {
 }
 
 func TestCreateImages(t *testing.T) {
-	images := []api.Image{
+	images := []Image{
 		{
 			UUID:       uuid.New(),
 			Name:       "testImage",
@@ -139,7 +145,7 @@ func TestCreateImages(t *testing.T) {
 
 func TestDuplicateCreateImages(t *testing.T) {
 	dummyUUID := uuid.New()
-	images := []api.Image{
+	images := []Image{
 		{
 			UUID:       dummyUUID,
 			Name:       "testImage",
@@ -173,7 +179,7 @@ func TestDuplicateCreateImages(t *testing.T) {
 }
 
 func TestDeleteImage(t *testing.T) {
-	image := api.Image{
+	image := Image{
 		UUID:       uuid.New(),
 		Name:       "testDeleteImage",
 		Owner:      "William",
@@ -197,7 +203,7 @@ func TestDeleteImage(t *testing.T) {
 }
 
 func TestUpdateImage(t *testing.T) {
-	image1 := api.Image{
+	image1 := Image{
 		UUID:       uuid.New(),
 		Name:       "testUpdateImageFirst",
 		Owner:      "William",
@@ -208,7 +214,7 @@ func TestUpdateImage(t *testing.T) {
 		BucketPath: "william/testImage",
 		Status:     "CREATED",
 	}
-	image2 := api.Image{
+	image2 := Image{
 		UUID:       image1.UUID,
 		Name:       "testUpdateImageSecond",
 		Owner:      "Bill",
@@ -232,7 +238,7 @@ func TestUpdateImage(t *testing.T) {
 }
 
 func TestGetImage(t *testing.T) {
-	image1 := &api.Image{
+	image1 := &Image{
 		UUID:       uuid.New(),
 		Name:       "testGetImage",
 		Owner:      "William",
@@ -259,7 +265,7 @@ func TestGetImage(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	user, err := api.NewUser("dummyUser", "dummyPassword")
+	user, err := NewUser("dummyUser", "dummyPassword")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -275,7 +281,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestDestroyUser(t *testing.T) {
-	user, err := api.NewUser("dummyUserToDelete", "dummyPassword")
+	user, err := NewUser("dummyUserToDelete", "dummyPassword")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -289,6 +295,40 @@ func TestDestroyUser(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 	err = DeleteUser(db, user.Username)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestCreateActiveSession(t *testing.T) {
+	session := UserActiveSession{
+		UUID:       uuid.New(),
+		Username:   "testActiveSession",
+		CreatedAt:  time.Now(),
+		Expiration: time.Now().Add(2 * time.Hour),
+	}
+
+	err := CreateActiveSession(db, session)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func TestUpdateActiveSession(t *testing.T) {
+	session := UserActiveSession{
+		UUID:       uuid.New(),
+		Username:   "testUpdateSession",
+		CreatedAt:  time.Now(),
+		Expiration: time.Now().Add(2 * time.Hour),
+	}
+
+	err := CreateActiveSession(db, session)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	session.Expiration = session.Expiration.Add(2 * time.Hour)
+	err = UpdateSessionExpiration(db, session)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

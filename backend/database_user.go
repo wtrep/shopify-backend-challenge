@@ -1,0 +1,64 @@
+package backend
+
+import "database/sql"
+
+func CreateUser(db *sql.DB, user User) error {
+	_, err := db.Exec("INSERT INTO users (username, pwHash) VALUEs (?, ?)", user.Username, user.PwHash)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateUser(db *sql.DB, user User) error {
+	_, err := db.Exec("UPDATE users SET pwHash = ? WHERE username = ?", user.PwHash, user.Username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteUser(db *sql.DB, username string) error {
+	_, err := db.Exec("DELETE FROM `users` WHERE `username` = ?", username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetUser(db *sql.DB, username string) (*User, error) {
+	row := db.QueryRow("SELECT * FROM users WHERE username=?", username)
+	user := &User{}
+
+	err := row.Scan(&user.Username, &user.PwHash)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func CreateActiveSession(db *sql.DB, session UserActiveSession) error {
+	uuidToCreate, err := session.UUID.MarshalBinary()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("INSERT INTO sessions (UUID, username, created, expiration) VALUES (?, ?, ?, ?)",
+		uuidToCreate, session.Username, session.CreatedAt, session.Expiration)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateSessionExpiration(db *sql.DB, session UserActiveSession) error {
+	uuidToFind, err := session.UUID.MarshalBinary()
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec("UPDATE sessions SET expiration = ? WHERE UUID = ?", session.Expiration, uuidToFind)
+	if err != nil {
+		return err
+	}
+	return nil
+}

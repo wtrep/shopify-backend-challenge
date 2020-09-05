@@ -1,19 +1,18 @@
-package database
+package backend
 
 import (
 	"database/sql"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/wtrep/image-repo-backend/api"
 	"sync"
 )
 
 type CreateImageError struct {
-	image api.Image
+	image Image
 	err   error
 }
 
-func CreateImage(db *sql.DB, image api.Image) error {
+func CreateImage(db *sql.DB, image Image) error {
 	uuidToCreate, err := image.UUID.MarshalBinary()
 	if err != nil {
 		return err
@@ -32,7 +31,7 @@ func CreateImage(db *sql.DB, image api.Image) error {
 	return nil
 }
 
-func CreateImages(db *sql.DB, images []api.Image) ([]CreateImageError, error) {
+func CreateImages(db *sql.DB, images []Image) ([]CreateImageError, error) {
 	stmt, err := generateCreateImageStatement(db)
 	if err != nil {
 		return nil, err
@@ -58,7 +57,7 @@ func CreateImages(db *sql.DB, images []api.Image) ([]CreateImageError, error) {
 	return nil, nil
 }
 
-func createImageFromStmt(stmt *sql.Stmt, image api.Image, failedChan chan<- CreateImageError, wg *sync.WaitGroup) {
+func createImageFromStmt(stmt *sql.Stmt, image Image, failedChan chan<- CreateImageError, wg *sync.WaitGroup) {
 	uuidToCreate, err := image.UUID.MarshalBinary()
 	if err != nil {
 		failedChan <- CreateImageError{
@@ -99,14 +98,14 @@ func DeleteImage(db *sql.DB, id uuid.UUID) error {
 	return nil
 }
 
-func GetImage(db *sql.DB, id uuid.UUID) (*api.Image, error) {
+func GetImage(db *sql.DB, id uuid.UUID) (*Image, error) {
 	uuidToGet, err := id.MarshalBinary()
 	if err != nil {
 		return nil, err
 	}
 
 	row := db.QueryRow("SELECT * FROM images WHERE UUID = ?", uuidToGet)
-	image := &api.Image{}
+	image := &Image{}
 	var uuidToParse []byte
 
 	err = row.Scan(&uuidToParse, &image.Name, &image.Owner, &image.Kind, &image.Height, &image.Length, &image.Bucket,
@@ -122,7 +121,7 @@ func GetImage(db *sql.DB, id uuid.UUID) (*api.Image, error) {
 	return image, nil
 }
 
-func UpdateImage(db *sql.DB, image api.Image) error {
+func UpdateImage(db *sql.DB, image Image) error {
 	uuidToUpdate, err := image.UUID.MarshalBinary()
 	if err != nil {
 		return err
