@@ -15,9 +15,12 @@
 .idea
 
 # Deployment specifics
-deployment/service-account.json
-deployment/terraform*
-deployment/.terraform
+*service-account.json
+*terraform.tf*
+*/.terraform
+
+# MacOS
+.DS_Store
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
