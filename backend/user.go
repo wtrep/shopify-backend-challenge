@@ -18,11 +18,6 @@ type UserActiveSession struct {
 	Expiration time.Time `json:"expiration"`
 }
 
-type UserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 const (
 	defaultCost = 10
 )
