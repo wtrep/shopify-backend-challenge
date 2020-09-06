@@ -4,8 +4,9 @@ ENV GOPRIVATE=github.com/wtrep/image-repo-backend
 
 WORKDIR /go/src/app
 
-COPY backend ./backend
-COPY main.go .
+COPY auth ./auth
+COPY common ./common
+COPY main_auth.go .
 COPY go.mod .
 COPY go.sum .
 
