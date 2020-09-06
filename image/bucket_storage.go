@@ -60,3 +60,21 @@ func generateSignedURL(bucket, object string) (string, error) {
 
 	return u, nil
 }
+
+func deleteFile(bucket, object string) error {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, time.Second*15)
+	defer cancel()
+
+	o := client.Bucket(bucket).Object(object)
+	if err := o.Delete(ctx); err != nil {
+		return err
+	}
+	return nil
+}

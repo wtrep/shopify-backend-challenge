@@ -29,7 +29,7 @@ func SetupAndServeRoutes() {
 	r := mux.NewRouter()
 	r.HandleFunc("/image", handler.HandlePostImage).Methods("POST")
 	r.HandleFunc("/image/{uuid}", handler.HandleGetImage).Methods("GET")
-	//r.HandleFunc("/image/{uuid}", handler.HandleDeleteImage).Methods("DELETE")
+	r.HandleFunc("/image/{uuid}", handler.HandleDeleteImage).Methods("DELETE")
 	//r.HandleFunc("/images", handler.HandleGetImages).Methods("GET")
 	r.HandleFunc("/upload/{uuid}", handler.HandlePostUpload).Methods("POST")
 	err = http.ListenAndServe(":8080", r)
@@ -94,7 +94,7 @@ func (h *Handler) HandleGetImage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		response := image.toImageResponse(url)
+		response := image.toLinkedImageResponse(url)
 		err = json.NewEncoder(w).Encode(&response)
 		if err != nil {
 			common.RespondWithError(w, &common.JSONEncoderError)
@@ -156,7 +156,61 @@ func (h *Handler) HandlePostUpload(w http.ResponseWriter, r *http.Request) {
 		common.RespondWithError(w, &common.URLGenerationError)
 	}
 
-	response := image.toImageResponse(url)
+	response := image.toLinkedImageResponse(url)
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		common.RespondWithError(w, &common.JSONEncoderError)
+	}
+}
+
+func (h *Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	w.Header().Set("Content-Type", "application/json")
+	uuidToGet, err := uuid.Parse(vars["uuid"])
+	if err != nil {
+		common.RespondWithError(w, &common.InvalidUUIDError)
+		return
+	}
+
+	username, errResponse := handleJWT(r)
+	if errResponse != nil {
+		common.RespondWithError(w, errResponse)
+		return
+	}
+
+	image, err := GetImage(h.db, uuidToGet)
+	if err != nil {
+		common.RespondWithError(w, &common.ImageNotFoundError)
+		return
+	}
+
+	if username != image.Owner {
+		common.RespondWithError(w, &common.UserPermissionDeniedError)
+		return
+	}
+
+	tx, err := DeleteImage(h.db, image.UUID)
+	if err != nil {
+		common.RespondWithError(w, &common.DBDeletionError)
+		return
+	}
+
+	if image.Status == "UPLOADED" {
+		err = deleteFile(image.Bucket, image.BucketPath)
+		if err != nil {
+			tx.Rollback()
+			common.RespondWithError(w, &common.URLGenerationError)
+			return
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		common.RespondWithError(w, &common.DBDeletionError)
+		return
+	}
+
+	response := image.toUnlinkedImageResponse()
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		common.RespondWithError(w, &common.JSONEncoderError)

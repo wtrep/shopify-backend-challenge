@@ -85,7 +85,7 @@ var InvalidTokenError = ErrorResponseError{
 
 var TokenGenerationError = ErrorResponseError{
 	Id:     1209,
-	Name:   "TokenGenerationError",
+	Name:   "InternalServerError",
 	Detail: "An unhandled error occurred, please try again",
 	Code:   http.StatusInternalServerError,
 }
@@ -143,6 +143,20 @@ var UserPermissionDeniedError = ErrorResponseError{
 	Id:     1218,
 	Name:   "UserPermissionDeniedError",
 	Detail: "You aren't the owner of that image",
+	Code:   http.StatusUnauthorized,
+}
+
+var FileDeletionError = ErrorResponseError{
+	Id:     1219,
+	Name:   "InternalServerError",
+	Detail: "An unhandled error occurred, please try again",
+	Code:   http.StatusUnauthorized,
+}
+
+var DBDeletionError = ErrorResponseError{
+	Id:     1220,
+	Name:   "InternalServerError",
+	Detail: "An unhandled error occurred, please try again",
 	Code:   http.StatusUnauthorized,
 }
 

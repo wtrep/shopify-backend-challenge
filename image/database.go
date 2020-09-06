@@ -52,16 +52,20 @@ func UpdateImage(db *sql.DB, image Image) error {
 	return nil
 }
 
-func DeleteImage(db *sql.DB, id uuid.UUID) error {
+func DeleteImage(db *sql.DB, id uuid.UUID) (*sql.Tx, error) {
 	uuidToDelete, err := id.MarshalBinary()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = db.Exec("DELETE FROM `images` WHERE `uuid` = ?", uuidToDelete)
+	tx, err := db.Begin()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	_, err = tx.Exec("DELETE FROM `images` WHERE `uuid` = ?", uuidToDelete)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
 
 func GetImage(db *sql.DB, id uuid.UUID) (*Image, error) {

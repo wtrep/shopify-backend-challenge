@@ -31,11 +31,22 @@ func (i CreateImageRequest) toImage(owner string) Image {
 	}
 }
 
-func (i Image) toImageResponse(url string) LinkedImageResponse {
+func (i Image) toLinkedImageResponse(url string) LinkedImageResponse {
 	return LinkedImageResponse{
 		Uuid:      i.UUID.String(),
 		Name:      i.Name,
 		Url:       url,
+		Owner:     i.Owner,
+		Extension: i.Extension,
+		Height:    i.Height,
+		Length:    i.Length,
+	}
+}
+
+func (i Image) toUnlinkedImageResponse() UnlinkedImageResponse {
+	return UnlinkedImageResponse{
+		Uuid:      i.UUID.String(),
+		Name:      i.Name,
 		Owner:     i.Owner,
 		Extension: i.Extension,
 		Height:    i.Height,
