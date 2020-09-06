@@ -90,3 +90,25 @@ func GetImage(db *sql.DB, id uuid.UUID) (*Image, error) {
 	}
 	return image, nil
 }
+
+func GetImages(db *sql.DB, username string) ([]Image, error) {
+	rows, err := db.Query("SELECT * FROM images WHERE owner = ? LIMIT 500", username)
+	images := make([]Image, 0)
+
+	for rows.Next() {
+		var image Image
+		var uuidToParse []byte
+		err = rows.Scan(&uuidToParse, &image.Name, &image.Owner, &image.Extension, &image.Height, &image.Length,
+			&image.Bucket, &image.BucketPath, &image.Status)
+		if err != nil {
+			return nil, err
+		}
+		err = image.UUID.UnmarshalBinary(uuidToParse)
+		if err != nil {
+			return nil, err
+		}
+		images = append(images, image)
+	}
+
+	return images, nil
+}

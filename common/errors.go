@@ -150,14 +150,21 @@ var FileDeletionError = ErrorResponseError{
 	Id:     1219,
 	Name:   "InternalServerError",
 	Detail: "An unhandled error occurred, please try again",
-	Code:   http.StatusUnauthorized,
+	Code:   http.StatusInternalServerError,
 }
 
 var DBDeletionError = ErrorResponseError{
 	Id:     1220,
 	Name:   "InternalServerError",
 	Detail: "An unhandled error occurred, please try again",
-	Code:   http.StatusUnauthorized,
+	Code:   http.StatusInternalServerError,
+}
+
+var GetImagesDBError = ErrorResponseError{
+	Id:     1221,
+	Name:   "InternalServerError",
+	Detail: "An unhandled error occurred, please try again",
+	Code:   http.StatusInternalServerError,
 }
 
 func RespondWithError(w http.ResponseWriter, error *ErrorResponseError) {

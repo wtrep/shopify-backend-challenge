@@ -30,7 +30,7 @@ func SetupAndServeRoutes() {
 	r.HandleFunc("/image", handler.HandlePostImage).Methods("POST")
 	r.HandleFunc("/image/{uuid}", handler.HandleGetImage).Methods("GET")
 	r.HandleFunc("/image/{uuid}", handler.HandleDeleteImage).Methods("DELETE")
-	//r.HandleFunc("/images", handler.HandleGetImages).Methods("GET")
+	r.HandleFunc("/images", handler.HandleGetImages).Methods("GET")
 	r.HandleFunc("/upload/{uuid}", handler.HandlePostUpload).Methods("POST")
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {
@@ -199,7 +199,7 @@ func (h *Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 		err = deleteFile(image.Bucket, image.BucketPath)
 		if err != nil {
 			tx.Rollback()
-			common.RespondWithError(w, &common.URLGenerationError)
+			common.RespondWithError(w, &common.FileDeletionError)
 			return
 		}
 	}
@@ -211,6 +211,28 @@ func (h *Handler) HandleDeleteImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := image.toUnlinkedImageResponse()
+	err = json.NewEncoder(w).Encode(&response)
+	if err != nil {
+		common.RespondWithError(w, &common.JSONEncoderError)
+	}
+}
+
+func (h *Handler) HandleGetImages(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	username, errResponse := handleJWT(r)
+	if errResponse != nil {
+		common.RespondWithError(w, errResponse)
+		return
+	}
+
+	images, err := GetImages(h.db, username)
+	if err != nil {
+		common.RespondWithError(w, &common.GetImagesDBError)
+		return
+	}
+
+	response := imagesToUnlinkedImagesReponse(images)
 	err = json.NewEncoder(w).Encode(&response)
 	if err != nil {
 		common.RespondWithError(w, &common.JSONEncoderError)

@@ -64,3 +64,11 @@ func (i Image) toCreateImageResponse() CreateImageResponse {
 		Length:    i.Length,
 	}
 }
+
+func imagesToUnlinkedImagesReponse(images []Image) []UnlinkedImageResponse {
+	response := make([]UnlinkedImageResponse, 0)
+	for _, i := range images {
+		response = append(response, i.toUnlinkedImageResponse())
+	}
+	return response
+}
