@@ -1,6 +1,19 @@
-package backend
+package common
 
-import "net/http"
+import (
+	"net/http"
+)
+
+type ErrorResponse struct {
+	Error DetailedError `json:"error"`
+}
+
+type DetailedError struct {
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Detail string `json:"detail"`
+	Code   int    `json:"-"`
+}
 
 var InvalidRequestBodyError = DetailedError{
 	ID:     1200,
@@ -48,7 +61,7 @@ var UserAlreadyExistError = DetailedError{
 	ID:     1206,
 	Name:   "UserAlreadyExistError",
 	Detail: "The provided user already exist",
-	Code:   http.StatusBadRequest,
+	Code:   http.StatusConflict,
 }
 
 var MissingTokenError = DetailedError{
@@ -65,11 +78,11 @@ var InvalidTokenError = DetailedError{
 	Code:   http.StatusBadRequest,
 }
 
-var NoSessionError = DetailedError{
+var TokenGenerationError = DetailedError{
 	ID:     1209,
-	Name:   "NoSessionError",
-	Detail: "No session is associated with the provided token",
-	Code:   http.StatusUnauthorized,
+	Name:   "TokenGenerationError",
+	Detail: "An unhandled error occurred, please try again",
+	Code:   http.StatusInternalServerError,
 }
 
 var TokenExpiredError = DetailedError{

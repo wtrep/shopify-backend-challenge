@@ -1,21 +1,12 @@
-package backend
+package auth
 
 import (
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"time"
 )
 
 type User struct {
 	Username string
 	PwHash   []byte
-}
-
-type UserActiveSession struct {
-	UUID       uuid.UUID `json:"token"`
-	Username   string    `json:"username"`
-	CreatedAt  time.Time `json:"created_at"`
-	Expiration time.Time `json:"expiration"`
 }
 
 const (
