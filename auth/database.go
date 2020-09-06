@@ -8,20 +8,12 @@ import (
 )
 
 func NewConnectionPool() (*sql.DB, error) {
-	dbIP, ok := os.LookupEnv("DB_IP")
-	if !ok {
-		return nil, errors.New("error: DB_IP environment variable not set")
-	}
-	dbPassword, ok := os.LookupEnv("DB_PASSWORD")
-	if !ok {
-		return nil, errors.New("error: DB_PASSWORD environment variable not set")
-	}
-	dbName, ok := os.LookupEnv("DB_NAME")
-	if !ok {
-		return nil, errors.New("error: DB_NAME environment variable not set")
-	}
+	dbIP := os.Getenv("DB_IP")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbUsername := os.Getenv("DB_USERNAME")
 
-	db, err := sql.Open("mysql", "backend-sa:"+dbPassword+"@("+dbIP+")/"+dbName+
+	db, err := sql.Open("mysql", dbUsername+":"+dbPassword+"@("+dbIP+")/"+dbName+
 		"?parseTime=true")
 	if err != nil {
 		return nil, err

@@ -40,7 +40,7 @@ resource "google_sql_database" "test-db" {
 }
 
 ###################################################
-##   Create the backend MySQL service account    ##
+##   Create the image MySQL service account    ##
 ###################################################
 resource "google_sql_user" "db-user" {
   name     = "backend-sa"
@@ -49,9 +49,21 @@ resource "google_sql_user" "db-user" {
 }
 
 ###################################################
-##        Create the images GCP bucket           ##
+##         Create the Storage Bucket             ##
 ###################################################
-resource "google_storage_bucket" "images" {
-  name     = "shopify-backend-challenge-images-bucket"
+module "bucket" {
+  source   = "./bucket"
   location = "NORTHAMERICA-NORTHEAST1"
+}
+
+###################################################
+##           Create the GKE Cluster              ##
+###################################################
+module "gke_cluster" {
+  source             = "./gke"
+  initial_node_count = 2
+  machine_type       = "e2-micro"
+  name               = "image-repo-backend-cluster"
+  project            = var.gcp_project
+  region             = var.gcp_region
 }
