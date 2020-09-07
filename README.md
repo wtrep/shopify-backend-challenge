@@ -33,3 +33,4 @@ The terraform folder contains three modules that create seperatly their respecti
  * Deploy in another Kubernetes namespace then the default one
  * Create Kubernetes secret through Terraform instead of manually
  * Automate the installation of the community managed [NGINX ingress controller](https://kubernetes.github.io/ingress-nginx/deploy/#gce-gke)
+ * Add outputs to the terraform modules to allow better reusability
