@@ -1,9 +1,17 @@
+provider "google" {
+  credentials = file(var.credentials_file)
+  project     = var.gcp_project
+  region      = var.gcp_region
+  zone        = var.gcp_az
+}
+
 ###################################################
 ##       Create the GKE container cluster        ##
 ###################################################
 resource "google_container_cluster" "primary" {
-  name     = var.name
-  location = var.region
+  name     = "${var.gcp_project}-gke"
+  network  = "default"
+  location = var.gcp_region
 
   remove_default_node_pool = true
   initial_node_count       = var.initial_node_count
@@ -22,9 +30,9 @@ resource "google_container_cluster" "primary" {
 ##      Create the GKE container node pool       ##
 ###################################################
 resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "${var.name}-node-pool"
-  location   = var.region
+  name       = "${var.gcp_project}-node-pool"
   cluster    = google_container_cluster.primary.name
+  location   = var.gcp_region
   node_count = 1
 
   node_config {

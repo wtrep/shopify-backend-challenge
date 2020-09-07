@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-microservice-deployment
+  labels:
+    app: shopify-backend-challenge-auth
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shopify-backend-challenge-auth
+  template:
+    metadata:
+      labels:
+        app: shopify-backend-challenge-auth
+    spec:
+      containers:
+        - name: auth-microservice
+          image: wtrep/shopify-backend-challenge-auth:1.0.0
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          env:
+            - name: DB_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_IP
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_USERNAME
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_NAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-password
+                  key: DB_PASSWORD
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-key
+                  key: JWT_KEY

@@ -1,16 +1,21 @@
-variable "name" {
+variable "credentials_file" {
+  description = "Relative path to the GCP credentials file."
   type        = string
-  description = "Name of the GKE cluster"
 }
 
-variable "project" {
+variable "gcp_project" {
+  description = "GCP Project in which to deploy resources"
   type        = string
-  description = "GCP project to deploy in"
 }
 
-variable "region" {
+variable "gcp_region" {
+  description = "Region in which the resources are deployed"
   type        = string
-  description = "GCP region to deploy in"
+}
+
+variable "gcp_az" {
+  description = "AZ in which the resources are deployed"
+  type        = string
 }
 
 variable "initial_node_count" {

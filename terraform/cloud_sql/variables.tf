@@ -18,6 +18,11 @@ variable "gcp_az" {
   type        = string
 }
 
+variable "db_name" {
+  description = "Name of the db"
+  type        = string
+}
+
 variable "db_password" {
   description = "Password for the DB service account"
   type        = string

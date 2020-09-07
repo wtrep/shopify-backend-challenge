@@ -4,7 +4,7 @@
 # Deployment specifics
 *service-account.json
 *terraform.tf*
-*/.terraform
+terraform/*/.terraform*
 
 # MacOS
 .DS_Store

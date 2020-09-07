@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-microservice-deployment
+  labels:
+    app: shopify-backend-challenge-image
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: shopify-backend-challenge-image
+  template:
+    metadata:
+      labels:
+        app: shopify-backend-challenge-image
+    spec:
+      containers:
+        - name: image-microservice
+          image: wtrep/shopify-backend-challenge-image:latest
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: gcp-sa-volume
+              mountPath: /opt/certs
+          env:
+            - name: DB_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_IP
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_USERNAME
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_NAME
+            - name: BUCKET
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: BUCKET
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: GOOGLE_APPLICATION_CREDENTIALS
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloudsql-db-password
+                  key: DB_PASSWORD
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-key
+                  key: JWT_KEY
+      volumes:
+        - name: gcp-sa-volume
+          secret:
+            secretName: gcp-image-sa
