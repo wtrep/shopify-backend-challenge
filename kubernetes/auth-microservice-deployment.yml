@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: auth-microservice
-          image: wtrep/shopify-backend-challenge-auth:1.0.0
+          image: wtrep/shopify-backend-challenge-auth:1.0.3
           ports:
             - containerPort: 8080
           livenessProbe:
@@ -32,11 +32,6 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 30
           env:
-            - name: DB_IP
-              valueFrom:
-                configMapKeyRef:
-                  name: backend-env-vars
-                  key: DB_IP
             - name: DB_USERNAME
               valueFrom:
                 configMapKeyRef:
@@ -57,3 +52,19 @@ spec:
                 secretKeyRef:
                   name: jwt-key
                   key: JWT_KEY
+        - name: cloud-sql-proxy
+          image: gcr.io/cloudsql-docker/gce-proxy:1.17
+          command:
+            - "/cloud_sql_proxy"
+            - "-instances=shopify-image-repo:northamerica-northeast1:shopify-challenge-images-repo-3=tcp:3306"
+            - "-credential_file=/secrets/service_account.json"
+          securityContext:
+            runAsNonRoot: true
+          volumeMounts:
+            - name: sql-secret-mount
+              mountPath: /secrets/
+              readOnly: true
+      volumes:
+        - name: sql-secret-mount
+          secret:
+            secretName: sql-sa-secret  

@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: image-cluster-ip-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: shopify-backend-challenge-image
   ports:
@@ -15,7 +15,7 @@ kind: Service
 metadata:
   name: auth-cluster-ip-service
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: shopify-backend-challenge-auth
   ports:

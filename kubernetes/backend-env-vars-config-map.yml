@@ -3,8 +3,7 @@ kind: ConfigMap
 metadata:
   name: backend-env-vars
 data:
-  DB_IP: 10.53.0.3
   DB_USERNAME: backend-sa
-  DB_NAME: shopify-challenge-images-repo-1
+  DB_NAME: shopify-challenge-images-repo-3
   BUCKET: shopify-backend-challenge-images-bucket
-  GOOGLE_APPLICATION_CREDENTIALS: /opt/certs
+  GOOGLE_APPLICATION_CREDENTIALS: /opt/certs/shopify-image-repo-b0a1dd3293a3.json
