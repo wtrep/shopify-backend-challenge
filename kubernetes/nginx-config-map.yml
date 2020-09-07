@@ -1,6 +1,0 @@
-apiVersion: v1
-data:
-  proxy-body-size: "10m"
-kind: ConfigMap
-metadata:
-  name: ingress-nginx-controller
