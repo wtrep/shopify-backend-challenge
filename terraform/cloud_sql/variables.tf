@@ -18,6 +18,11 @@ variable "gcp_az" {
   type        = string
 }
 
+variable "db_instance_name" {
+  description = "Name of the db instance"
+  type        = string
+}
+
 variable "db_name" {
   description = "Name of the db"
   type        = string
@@ -25,5 +30,28 @@ variable "db_name" {
 
 variable "db_password" {
   description = "Password for the DB service account"
+  type        = string
+}
+
+variable "database_tier" {
+  description = "Tier of the Database"
+  type        = string
+  default     = "db-f1-micro"
+}
+
+variable "database_version" {
+  description = "Version of the Database"
+  type        = string
+  default     = "MYSQL_5_7"
+}
+
+variable "authorized_networks" {
+  description = "Key-value pair of each authorized CIDR"
+  type        = list(map(string))
+  default     = null
+}
+
+variable "sql_service_account_name" {
+  description = "Name of the Cloud SQL Service account"
   type        = string
 }
