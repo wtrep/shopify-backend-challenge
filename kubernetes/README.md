@@ -15,4 +15,4 @@ kubectl apply -f <PATH OF THE FILE>
 
 # Minikube
 
-You can also deploy the microservices on minikube to avoid GKE fees, but you will still need a Cloud SQL public database and a Cloud Storage Bucket.
+You can also deploy the microservices on minikube to avoid GKE fees, but you will still need a Cloud SQL public instance and a Cloud Storage Bucket.
