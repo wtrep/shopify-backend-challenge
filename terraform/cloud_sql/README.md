@@ -6,3 +6,5 @@ This Terraform module creates the following GCP resources:
  * A Test Database
  * A MySQL account to access the DB
  * A GCP SA to access the CloudSQL Proxy
+
+Each variable is described in the `variable.tf` file and an example `example.tfvars` is also provided
