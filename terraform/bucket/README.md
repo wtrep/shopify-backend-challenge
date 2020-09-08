@@ -5,4 +5,4 @@ This Terraform module creates the following GCP resources:
  * A GCP SA to allow write access to the bucket
  * A GCP bucket signing account Key
 
-Each variables are described in the `variable.tf` file and an example `example.tfvars` is also provided.
+Each variable is described in the `variable.tf` file and an example `example.tfvars` is also provided.

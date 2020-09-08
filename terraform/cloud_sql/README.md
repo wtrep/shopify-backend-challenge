@@ -7,6 +7,6 @@ This Terraform module creates the following GCP resources:
  * A MySQL account to access the DB
  * A GCP SA to access the CloudSQL Proxy
 
-Each variables are described in the `variable.tf` file and an example `example.tfvars` is also provided.
+Each variable is described in the `variable.tf` file and an example `example.tfvars` is also provided.
 
-I was unable bind the `roles/cloudsql.client` role to the SA using terraform. A temporary workaround is to add it in the console or using the CLI.
+I was unable to bind the `roles/cloudsql.client` role to the SA using terraform. A temporary workaround is to add the role with the console or use the CLI.
