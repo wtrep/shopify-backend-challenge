@@ -22,3 +22,8 @@ variable "location" {
   type        = string
   description = "Location of the Bucket"
 }
+
+variable "bucket_name" {
+  type        = string
+  description = "Name of the bucket"
+}

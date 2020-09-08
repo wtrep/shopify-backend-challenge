@@ -9,7 +9,7 @@ provider "google" {
 ##        Create the images GCP bucket           ##
 ###################################################
 resource "google_storage_bucket" "images" {
-  name     = "shopify-backend-challenge-images-bucket"
+  name     = var.bucket_name
   location = var.location
 }
 
@@ -26,7 +26,7 @@ resource "google_service_account" "bucket_service_account" {
 ###################################################
 data "google_iam_policy" "bucket_storage_admin" {
   binding {
-    role = "roles/storage.admin"
+    role = "roles/storage.objectAdmin"
     members = [
       "serviceAccount:${google_service_account.bucket_service_account.email}"
     ]
