@@ -4,6 +4,8 @@ metadata:
   name: backend-env-vars
 data:
   DB_USERNAME: backend-sa
-  DB_NAME: shopify-challenge-images-repo-3
-  BUCKET: shopify-backend-challenge-images-bucket
-  GOOGLE_APPLICATION_CREDENTIALS: /opt/certs/shopify-image-repo-b0a1dd3293a3.json
+  DB_NAME: shopify-image-db
+  DB_CONNECTION_STRING: shopify-challenge-backend:us-east1:shopify-image-db=tcp:3306
+  CLOUD_SQL_CREDENTIAL_FILE: /secrets/sql-sa.json
+  BUCKET: shopify-challenge-image-bucket
+  BUCKET_URL_SIGNING_KEY: /opt/certs/bucket-sa.json

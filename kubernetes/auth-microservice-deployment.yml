@@ -45,7 +45,7 @@ spec:
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: cloudsql-db-password
+                  name: db-password
                   key: DB_PASSWORD
             - name: JWT_KEY
               valueFrom:
@@ -54,10 +54,21 @@ spec:
                   key: JWT_KEY
         - name: cloud-sql-proxy
           image: gcr.io/cloudsql-docker/gce-proxy:1.17
+          env:
+            - name: CLOUD_SQL_CREDENTIAL_FILE
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: CLOUD_SQL_CREDENTIAL_FILE
+            - name: DB_CONNECTION_STRING
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-env-vars
+                  key: DB_CONNECTION_STRING
           command:
             - "/cloud_sql_proxy"
-            - "-instances=shopify-image-repo:northamerica-northeast1:shopify-challenge-images-repo-3=tcp:3306"
-            - "-credential_file=/secrets/service_account.json"
+            - "-instances=$(DB_CONNECTION_STRING)"
+            - "-credential_file=$(CLOUD_SQL_CREDENTIAL_FILE)"
           securityContext:
             runAsNonRoot: true
           volumeMounts:
