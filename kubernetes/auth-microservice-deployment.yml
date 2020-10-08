@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: auth-microservice
-          image: wtrep/shopify-backend-challenge-auth:1.0.3
+          image: wtrep/shopify-backend-challenge-auth:1.0.4
           ports:
             - containerPort: 8080
           livenessProbe:
